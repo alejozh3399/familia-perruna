@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Familia Perruna</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap">
+<style>
+/* Layout: una tarjeta-escena centrada (el parque) con controles tipo "llaveros" debajo */
+:root {
+  --bg: #EEF4EA;
+  --surface: #FFFFFF;
+  --ink: #23301F;
+  --muted: #5E6B57;
+  --accent: #E07A2E;
+  --accent-ink: #FFFFFF;
+  --chip: #E3ECDC;
+  --chip-on: #2F5D2A;
+  --line: #CFDCC6;
+  --display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Nunito", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141A13; --surface: #1E261C; --ink: #EAF1E4; --muted: #A9B8A0;
+    --accent: #F0904A; --accent-ink: #1A1208; --chip: #2A3527; --chip-on: #9BD18F; --line: #34422F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141A13; --surface: #1E261C; --ink: #EAF1E4; --muted: #A9B8A0;
+  --accent: #F0904A; --accent-ink: #1A1208; --chip: #2A3527; --chip-on: #9BD18F; --line: #34422F;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 32px;
+}
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+header h1 { font-family: var(--display); font-weight: 700; font-size: 2rem; margin: 0; letter-spacing: .3px; text-wrap: balance; }
+header p { margin: 2px 0 0; color: var(--muted); }
+.scene { background: var(--surface); border-radius: 22px; overflow: hidden; border: 1px solid var(--line); position: relative; }
+.scene svg { display: block; width: 100%; height: auto; cursor: pointer; }
+.bubble {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px;
+  font-family: var(--display); font-weight: 500; font-size: 1.08rem; min-height: 50px; position: relative;
+}
+.bubble::before { content: ""; position: absolute; top: -8px; left: 50%; width: 14px; height: 14px; background: var(--surface);
+  border-left: 1px solid var(--line); border-top: 1px solid var(--line); transform: translateX(-50%) rotate(45deg); }
+.group-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; margin: 4px 2px -6px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+button.chip {
+  font-family: var(--body); font-weight: 700; font-size: .92rem; border: 0; border-radius: 999px; padding: 9px 14px;
+  background: var(--chip); color: var(--ink); cursor: pointer; transition: transform .12s;
+}
+button.chip:hover { transform: translateY(-1px); }
+button.chip[aria-pressed="true"] { background: var(--chip-on); color: var(--surface); }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+form.say { display: flex; gap: 8px; }
+form.say input { flex: 1; min-width: 0; font: inherit; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+form.say button { font-family: var(--display); font-weight: 600; border: 0; border-radius: 999px; padding: 10px 18px; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 10px 14px; }
+summary { cursor: pointer; font-weight: 700; }
+.names { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.names label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); }
+.names input { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+.hint { color: var(--muted); font-size: .85rem; margin: 0; }
+
+/* ---- animaciones de la escena ---- */
+.who { transform-box: fill-box; transform-origin: 50% 100%; animation: resp 3.2s ease-in-out infinite; filter: drop-shadow(0 5px 4px rgba(0,0,0,.28)); }
+.who.d2 { animation-delay: .5s } .who.d3 { animation-delay: 1s } .who.d4 { animation-delay: 1.5s }
+@keyframes resp { 0%,100% { transform: scale(1,1) } 50% { transform: scale(1.01,1.022) } }
+.cola { transform-box: fill-box; transform-origin: 0% 50%; animation: cola .5s ease-in-out infinite alternate; }
+.cola.izq { transform-origin: 100% 50%; }
+@keyframes cola { from { transform: rotate(-14deg) } to { transform: rotate(16deg) } }
+.ojos { transform-box: fill-box; transform-origin: 50% 50%; animation: parp 5s infinite; }
+@keyframes parp { 0%,94%,100% { transform: scaleY(1) } 97% { transform: scaleY(.1) } }
+.ladea { transform-box: fill-box; transform-origin: 50% 80%; transform: rotate(-9deg); transition: transform .4s; }
+.flota { animation: flota 2.2s ease-in-out infinite; }
+@keyframes flota { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+.late { transform-box: fill-box; transform-origin: center; animation: late .7s ease-in-out infinite; }
+@keyframes late { 0%,100% { transform: scale(1) } 50% { transform: scale(1.25) } }
+.zz { animation: zz 2.4s ease-in-out infinite; opacity: 0; }
+@keyframes zz { 0% { opacity: 0; transform: translateY(6px) } 40% { opacity: 1 } 100% { opacity: 0; transform: translateY(-10px) } }
+.cae { animation: cae 2.6s linear forwards; }
+@keyframes cae { from { transform: translateY(-40px) rotate(0) } to { transform: translateY(360px) rotate(260deg) } }
+.sube { animation: sube 2.4s ease-out forwards; }
+@keyframes sube { from { transform: translateY(0); opacity: 1 } to { transform: translateY(-120px); opacity: 0 } }
+.salta { animation: salta .55s ease-in-out 3 !important; }
+@keyframes salta { 0%,100% { transform: translateY(0) } 45% { transform: translateY(-26px) scale(1.02,.98) } }
+.gira { animation: gira 1.1s ease-in-out !important; transform-origin: 50% 60% !important; }
+@keyframes gira { to { transform: rotate(360deg) } }
+.tiembla { animation: tiembla .12s linear 10 !important; }
+@keyframes tiembla { 0%,100% { transform: translateX(0) } 50% { transform: translateX(3px) } }
+.flash { animation: flash .9s ease-out forwards; }
+@keyframes flash { 0% { opacity: .95 } 100% { opacity: 0 } }
+.pop { transform-box: fill-box; transform-origin: 50% 100%; animation: pop .35s ease-out; }
+@keyframes pop { from { transform: scale(.3); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+@media (prefers-reduced-motion: reduce) {
+  .who, .cola, .ojos, .flota, .late, .zz { animation: none !important; }
+  .salta, .gira, .tiembla, .cae, .sube { animation-duration: .01s !important; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Familia Perruna</h1>
+    <p>Elige cómo se sienten, ponles a hacer algo o escríbeles.</p>
+  </header>
+
+  <div class="scene"><svg id="escena" viewBox="0 0 400 330" role="img" aria-label="Una pareja con sus dos perritos en el parque"></svg></div>
+  <div class="bubble" id="dicho" aria-live="polite">¡Domingo de parque con la manada!</div>
+
+  <div class="group-label">Ánimo</div>
+  <div class="row" id="animos"></div>
+  <div class="group-label">Hagan algo</div>
+  <div class="row" id="acciones"></div>
+
+  <form class="say" id="decir">
+    <label for="frase" class="hint" hidden>Escríbeles algo</label>
+    <input id="frase" autocomplete="off" placeholder="Escríbeles algo: paseo, baño, premio, te quiero…">
+    <button type="submit">Decir</button>
+  </form>
+
+  <details>
+    <summary>Ponerles nombre</summary>
+    <div class="names">
+      <label for="n0">Ella<input id="n0" data-i="0" placeholder="Ella"></label>
+      <label for="n1">Él<input id="n1" data-i="1" placeholder="Él"></label>
+      <label for="n2">Perrito peludo<input id="n2" data-i="2" placeholder="Peludo"></label>
+      <label for="n3">Perrito cocker<input id="n3" data-i="3" placeholder="Cocker"></label>
+    </div>
+  </details>
+  <p class="hint">Toca a cualquiera de los cuatro para que reaccione.</p>
+</div>
+
+<script>
+const PIEL_ELLA = 'url(#gPielElla)', PIEL_EL = 'url(#gPielEl)', PELO = 'url(#gPelo)';
+const rg = (id, a, b, c, fx = .35, fy = .3) => `<radialGradient id="${id}" cx="${fx}" cy="${fy}" r=".85"><stop offset="0" stop-color="${a}"/><stop offset=".55" stop-color="${b}"/><stop offset="1" stop-color="${c}"/></radialGradient>`;
+const DEFS3D = `
+  ${rg('gPielElla', '#F8D6B8', '#E7B892', '#B9845F')}
+  ${rg('gPielEl', '#E6AE84', '#C98B5F', '#8E5A36')}
+  ${rg('gPelo', '#5A4234', '#2A1C15', '#120B08')}
+  ${rg('gSaco', '#4A4A54', '#1E1E24', '#08080A', .4, .2)}
+  ${rg('gTop', '#4E5E4A', '#2E3A2D', '#18201A', .5, .1)}
+  ${rg('gPolo', '#3C4C82', '#1C2647', '#0C1228', .4, .2)}
+  ${rg('gGorra', '#9A9EA4', '#62666B', '#3A3D41')}
+  ${rg('gCrema', '#FFF6E6', '#EAD6B4', '#BFA27A')}
+  ${rg('gOrejaC', '#EAD3AE', '#D7BD93', '#A8895E')}
+  ${rg('gCanela', '#F2B678', '#D58A45', '#9A5420')}
+  ${rg('gOreja', '#D7884A', '#B8692C', '#7A3E14')}
+  ${rg('gVientre', '#FFE4BE', '#F2C48E', '#D29A5E')}
+  ${rg('gArnes', '#B07A52', '#8A5634', '#5A3218')}
+  ${rg('gChapa', '#FFE38A', '#F2B233', '#B07A10')}
+  <radialGradient id="gSombra" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  <linearGradient id="gBrillo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`;
+const brillo = (cx, cy, rx, ry) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#gBrillo)" transform="rotate(-25 ${cx} ${cy})"/>`;
+const ANIMOS = [['feliz','Sonreír'],['pensando','Pensar'],['enojado','Enojarse'],['sorpresa','Sorpresa'],['dormido','Dormir']];
+const ACCIONES = [['saltar','Saltar'],['ladrar','Ladrar'],['girar','Dar vueltas'],['corazones','Corazones'],['premios','Lluvia de premios'],['foto','Selfie']];
+let estado = { animo: 'feliz', accion: null, solo: null };
+let nombres = ['Ella','Él','Peludo','Cocker'];
+try { const g = JSON.parse(localStorage.getItem('fp_nombres') || 'null'); if (Array.isArray(g)) nombres = nombres.map((n,i)=>g[i]||n); } catch (e) {}
+
+/* ---------- caras de personas ---------- */
+function ojosPersona(x1, x2, y, a) {
+  const par = f => f(x1) + f(x2);
+  if (a === 'feliz') return par(x => `<path d="M${x-5} ${y+1} q5 -6 10 0" stroke="#2A1A0E" stroke-width="2.4" fill="none" stroke-linecap="round"/>`);
+  if (a === 'dormido') return par(x => `<path d="M${x-5} ${y} q5 4 10 0" stroke="#2A1A0E" stroke-width="2.4" fill="none" stroke-linecap="round"/>`);
+  if (a === 'sorpresa') return `<g class="ojos">` + par(x => `<circle cx="${x}" cy="${y}" r="5" fill="#fff"/><circle cx="${x}" cy="${y}" r="3.1" fill="#3B2412"/><circle cx="${x-1}" cy="${y-1.4}" r="1.1" fill="#fff"/>`) + `</g>`;
+  if (a === 'enojado') return par(x => `<path d="M${x-5} ${y-2} L${x+5} ${y} Q${x+5} ${y+4} ${x} ${y+4} Q${x-5} ${y+4} ${x-5} ${y-2} Z" fill="#fff"/><circle cx="${x}" cy="${y+1.6}" r="2.3" fill="#3B2412"/>`);
+  const dx = a === 'pensando' ? 1.3 : 0, dy = a === 'pensando' ? -2 : 0;
+  return `<g class="ojos">` + par(x => `<ellipse cx="${x}" cy="${y}" rx="4.2" ry="4.6" fill="#fff"/><circle cx="${x+dx}" cy="${y+.5+dy}" r="2.9" fill="#3B2412"/><circle cx="${x-1+dx}" cy="${y-.8+dy}" r="1" fill="#fff"/>`) + `</g>`;
+}
+function cejasPersona(x1, x2, y, a, color) {
+  const c = (x, izq) => {
+    if (a === 'enojado') return izq ? `M${x-6} ${y-2} L${x+5} ${y+2}` : `M${x+6} ${y-2} L${x-5} ${y+2}`;
+    if (a === 'sorpresa') return `M${x-5} ${y-4} q5 -4 10 0`;
+    if (a === 'pensando') return izq ? `M${x-5} ${y} q5 -2 10 0` : `M${x-5} ${y-2} q5 -5 10 -1`;
+    return `M${x-5} ${y} q5 -3 10 0`;
+  };
+  return `<path d="${c(x1,true)} ${c(x2,false)}" stroke="${color}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+}
+function bocaPersona(x, y, a, labio) {
+  if (a === 'sorpresa') return `<ellipse cx="${x}" cy="${y+1}" rx="3.6" ry="4.4" fill="#5A1E1E"/>`;
+  if (a === 'enojado') return `<path d="M${x-7} ${y+3} q7 -6 14 0" stroke="${labio}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+  if (a === 'pensando') return `<path d="M${x-5} ${y+1} q5 -1.5 10 .6" stroke="${labio}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  if (a === 'dormido') return `<ellipse cx="${x}" cy="${y+1}" rx="2.4" ry="2" fill="${labio}"/>`;
+  return `<path d="M${x-8} ${y-1} q8 8 16 0 q-8 3 -16 0 Z" fill="#7A2E2A"/><path d="M${x-6} ${y} q6 2 12 0" stroke="#fff" stroke-width="1.6" fill="none"/>`;
+}
+function lentes(x1, x2, y, w) {
+  return `<g fill="rgba(255,255,255,.14)" stroke="#16161A" stroke-width="2.2">
+    <rect x="${x1-w/2}" y="${y-7.5}" width="${w}" height="15" rx="5"/><rect x="${x2-w/2}" y="${y-7.5}" width="${w}" height="15" rx="5"/></g>
+    <path d="M${x1+w/2} ${y-1} q${(x2-x1-w)/2} -3 ${x2-x1-w} 0" stroke="#16161A" stroke-width="2" fill="none"/>`;
+}
+
+function ella(a) {
+  const x = 128;
+  return `<g class="who d2" data-who="0">
+    <ellipse cx="${x}" cy="102" rx="40" ry="46" fill="${PELO}"/>
+    <circle cx="${x+10}" cy="54" r="15" fill="${PELO}"/>
+    <path d="M${x-14} 52 q12 -6 26 0" stroke="#3A2A20" stroke-width="2" fill="none"/>
+    <path d="M${x-36} 110 q-6 40 6 62 l12 -4 q-8 -26 -4 -56 Z" fill="${PELO}"/>
+    <rect x="${x-10}" y="132" width="20" height="26" fill="${PIEL_ELLA}"/>
+    <path d="M66 330 Q66 166 ${x} 148 Q190 166 190 330 Z" fill="url(#gSaco)"/>
+    <path d="M${x-18} 150 Q${x} 168 ${x+18} 150 L${x+22} 330 L${x-22} 330 Z" fill="url(#gTop)"/>
+    <path d="M${x-18} 150 L${x-28} 330 M${x+18} 150 L${x+28} 330" stroke="#2A2A30" stroke-width="2"/>
+    <ellipse cx="${x-31}" cy="108" rx="5" ry="7" fill="${PIEL_ELLA}"/><ellipse cx="${x+31}" cy="108" rx="5" ry="7" fill="${PIEL_ELLA}"/>
+    <ellipse cx="${x}" cy="104" rx="31" ry="37" fill="${PIEL_ELLA}"/>
+    ${brillo(x-12, 88, 10, 6)}
+    <path d="M${x-32} 100 Q${x-30} 62 ${x} 62 Q${x+32} 62 ${x+33} 100 Q${x+20} 76 ${x+2} 78 Q${x-12} 76 ${x-22} 86 Q${x-28} 92 ${x-32} 100 Z" fill="${PELO}"/>
+    <path d="M${x-30} 96 q-4 18 2 30" stroke="${PELO}" stroke-width="5" fill="none" stroke-linecap="round"/>
+    ${cejasPersona(x-15, x+15, 93, a, '#20140E')}
+    ${ojosPersona(x-15, x+15, 104, a)}
+    ${lentes(x-15, x+15, 104, 21)}
+    <path d="M${x} 108 q-3 8 0 10 q2 1 4 0" stroke="#B9835F" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    ${a === 'feliz' || a === 'sorpresa' ? `<ellipse cx="${x-19}" cy="118" rx="6" ry="3.5" fill="#F28B82" opacity=".45"/><ellipse cx="${x+19}" cy="118" rx="6" ry="3.5" fill="#F28B82" opacity=".45"/>` : ''}
+    ${bocaPersona(x, 125, a, '#8E3A33')}
+  </g>`;
+}
+
+function el(a) {
+  const x = 272;
+  return `<g class="who d3" data-who="1">
+    <rect x="${x-10}" y="138" width="20" height="24" fill="${PIEL_EL}"/>
+    <path d="M212 330 Q214 172 ${x} 154 Q330 172 334 330 Z" fill="url(#gPolo)"/>
+    <path d="M${x-16} 154 L${x} 176 L${x+16} 154 L${x+9} 151 L${x} 164 L${x-9} 151 Z" fill="#141C38"/>
+    <path d="M${x-15} 156 L${x} 176 L${x+15} 156" stroke="#C8303A" stroke-width="2" fill="none"/>
+    <path d="M${x+22} 196 l14 0 l0 12 q-7 8 -14 0 Z" fill="#203A8C"/><path d="M${x+29} 196 l0 18" stroke="#C8303A" stroke-width="4"/>
+    <ellipse cx="${x-31}" cy="114" rx="5" ry="7" fill="${PIEL_EL}"/><ellipse cx="${x+31}" cy="114" rx="5" ry="7" fill="${PIEL_EL}"/>
+    <ellipse cx="${x}" cy="112" rx="31" ry="35" fill="${PIEL_EL}"/>
+    <path d="M${x-31} 104 q2 -10 6 -12 l0 14 Z M${x+31} 104 q-2 -10 -6 -12 l0 14 Z" fill="${PELO}"/>
+    <path d="M${x-34} 100 Q${x-32} 62 ${x+2} 62 Q${x+34} 62 ${x+35} 100 Z" fill="url(#gGorra)"/>
+    ${brillo(x-12, 74, 12, 5)}
+    <path d="M${x-30} 92 q30 -6 62 0" stroke="#55595E" stroke-width="2" fill="none"/>
+    <path d="M${x-32} 97 Q${x-50} 98 ${x-62} 107 Q${x-34} 106 ${x-6} 101 Z" fill="#4E5156"/>
+    <circle cx="${x+2}" cy="63" r="3" fill="#55595E"/>
+    ${cejasPersona(x-14, x+14, 103, a, '#1A0F08')}
+    ${ojosPersona(x-14, x+14, 113, a)}
+    ${lentes(x-14, x+14, 113, 20)}
+    <path d="M${x} 116 q-3 8 0 10 q2 1 4 0" stroke="#9C6640" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    ${a === 'feliz' ? `<ellipse cx="${x-19}" cy="126" rx="6" ry="3.5" fill="#E0715F" opacity=".35"/><ellipse cx="${x+19}" cy="126" rx="6" ry="3.5" fill="#E0715F" opacity=".35"/>` : ''}
+    ${bocaPersona(x, 133, a, '#6B2A22')}
+    <path d="M332 222 Q342 236 340 250" stroke="#1C2647" stroke-width="26" stroke-linecap="round" fill="none"/>
+    <path d="M338 246 Q336 280 304 304" stroke="#B87A50" stroke-width="20" stroke-linecap="round" fill="none"/>
+    <path d="M334 252 Q332 280 306 298" stroke="#D9A07A" stroke-width="5" stroke-linecap="round" fill="none" opacity=".6"/>
+    <g stroke="#2E3238" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".9">
+      <path d="M332 258 q5 5 1 11 M327 270 q6 1 7 7 M324 284 q-5 4 0 9 M316 292 q5 -3 9 1"/>
+      <circle cx="333" cy="278" r="2.6"/>
+    </g>
+  </g>`;
+}
+
+/* ---------- caras de perros ---------- */
+function ojosPerro(x1, x2, y, a) {
+  const par = f => f(x1) + f(x2);
+  if (a === 'feliz') return par(x => `<path d="M${x-4.5} ${y+1} q4.5 -5.5 9 0" stroke="#111" stroke-width="2.6" fill="none" stroke-linecap="round"/>`);
+  if (a === 'dormido') return par(x => `<path d="M${x-4.5} ${y} q4.5 3.5 9 0" stroke="#111" stroke-width="2.4" fill="none" stroke-linecap="round"/>`);
+  if (a === 'sorpresa') return `<g class="ojos">` + par(x => `<circle cx="${x}" cy="${y}" r="5.2" fill="#111"/><circle cx="${x-1.6}" cy="${y-1.8}" r="1.8" fill="#fff"/>`) + `</g>`;
+  if (a === 'enojado') return par(x => `<circle cx="${x}" cy="${y+1}" r="3.3" fill="#111"/>`) +
+    `<path d="M${x1-6} ${y-6} L${x1+4} ${y-2} M${x2+6} ${y-6} L${x2-4} ${y-2}" stroke="#4A2C14" stroke-width="2.4" stroke-linecap="round"/>`;
+  const dy = a === 'pensando' ? -1.5 : 0, dx = a === 'pensando' ? 1 : 0;
+  return `<g class="ojos">` + par(x => `<circle cx="${x+dx}" cy="${y+dy}" r="4" fill="#111"/><circle cx="${x-1.2+dx}" cy="${y-1.4+dy}" r="1.4" fill="#fff"/>`) + `</g>`;
+}
+function bocaPerro(x, y, a) {
+  if (a === 'feliz') return `<path d="M${x-8} ${y} q8 10 16 0 Z" fill="#5A1A24"/><ellipse cx="${x}" cy="${y+6}" rx="4.2" ry="5" fill="#F07A8C"/><path d="M${x} ${y+3} l0 6" stroke="#D0566A" stroke-width="1"/>`;
+  if (a === 'enojado') return `<path d="M${x-8} ${y} h16 v5 h-16 Z" fill="#5A1A24"/><path d="M${x-7} ${y} l2 3 l2 -3 l2 3 l2 -3 l2 3 l2 -3 l2 3 l1 -3" fill="#fff" stroke="#fff" stroke-width=".6"/>`;
+  if (a === 'sorpresa') return `<ellipse cx="${x}" cy="${y+3}" rx="3" ry="3.6" fill="#5A1A24"/>`;
+  return `<path d="M${x-6} ${y} q3 3 6 0 q3 3 6 0" stroke="#3A2214" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+}
+
+function peludo(a) {
+  const x = 124, c = 'url(#gCrema)', s = 'url(#gOrejaC)';
+  const rulos = [[-30,250],[-22,236],[-4,232],[16,236],[30,250],[-34,272],[34,272],[-30,294],[30,294],[-14,306],[14,306],[0,286]]
+    .map(([dx,y]) => `<circle cx="${x+dx}" cy="${y}" r="16" fill="${c}"/>`).join('');
+  const cabeza = [[-18,206],[18,206],[-10,190],[10,190],[0,186],[-22,222],[22,222]]
+    .map(([dx,y]) => `<circle cx="${x+dx}" cy="${y}" r="13" fill="${c}"/>`).join('');
+  return `<g class="who d1" data-who="2">
+    <g class="cola izq"><path d="M${x-44} 296 q-22 -6 -26 -26 q12 8 28 14 Z" fill="${s}"/></g>
+    ${rulos}
+    <path d="M${x-30} 246 q30 18 60 0 l0 12 q-30 18 -60 0 Z" fill="url(#gArnes)"/>
+    <path d="M${x-30} 246 q30 18 60 0" stroke="#6E4127" stroke-width="1.5" fill="none"/>
+    <path d="M${x-26} 252 q26 14 52 0" stroke="#D9A97A" stroke-width="1" stroke-dasharray="3 3" fill="none"/>
+    <circle cx="${x+12}" cy="266" r="7" fill="url(#gChapa)" stroke="#C88A16" stroke-width="1.5"/><circle cx="${x+12}" cy="266" r="2" fill="#C88A16"/>
+    <circle cx="${x+12}" cy="257" r="2.6" fill="none" stroke="#B88A3A" stroke-width="1.6"/>
+    <g class="${a === 'pensando' ? 'ladea' : ''}">
+      <path d="M${x-30} 196 q-16 14 -10 42 q10 6 16 -2 q-2 -20 4 -32 Z" fill="${s}"/>
+      <path d="M${x+30} 196 q16 14 10 42 q-10 6 -16 -2 q2 -20 -4 -32 Z" fill="${s}"/>
+      ${cabeza}
+      <ellipse cx="${x}" cy="210" rx="24" ry="22" fill="${c}"/>
+      <ellipse cx="${x}" cy="222" rx="13" ry="10" fill="#F3E4C8"/>
+      ${brillo(x-9, 196, 9, 5)}
+      ${ojosPerro(x-11, x+11, 204, a)}
+      <ellipse cx="${x}" cy="216" rx="6" ry="4.6" fill="#141414"/><ellipse cx="${x-1.5}" cy="214.6" rx="2" ry="1.2" fill="#666"/>
+      ${bocaPerro(x, 222, a)}
+    </g>
+    <g fill="${c}" stroke="${s}" stroke-width="1"><ellipse cx="${x-16}" cy="318" rx="11" ry="8"/><ellipse cx="${x+16}" cy="318" rx="11" ry="8"/></g>
+  </g>`;
+}
+
+function cocker(a) {
+  const x = 276, c = 'url(#gCanela)', o = 'url(#gOreja)', v = 'url(#gVientre)';
+  return `<g class="who d4" data-who="3">
+    <g class="cola"><path d="M${x+30} 300 q24 2 30 -18 q-14 6 -30 6 Z" fill="${o}"/></g>
+    <ellipse cx="${x}" cy="276" rx="34" ry="40" fill="${c}"/>
+    <ellipse cx="${x}" cy="284" rx="20" ry="26" fill="${v}"/>
+    <g class="${a === 'pensando' ? 'ladea' : ''}">
+      <path d="M${x-22} 200 q-20 6 -18 40 q2 18 14 18 q10 -4 8 -20 q-2 -18 4 -30 Z" fill="${o}"/>
+      <path d="M${x-30} 232 q2 10 8 14 M${x-34} 220 q0 10 4 16" stroke="#9A5420" stroke-width="1.6" fill="none"/>
+      <path d="M${x+22} 200 q20 6 18 40 q-2 18 -14 18 q-10 -4 -8 -20 q2 -18 -4 -30 Z" fill="${o}"/>
+      <path d="M${x+30} 232 q-2 10 -8 14 M${x+34} 220 q0 10 -4 16" stroke="#9A5420" stroke-width="1.6" fill="none"/>
+      <ellipse cx="${x}" cy="208" rx="23" ry="22" fill="${c}"/>
+      <ellipse cx="${x}" cy="222" rx="11" ry="9" fill="${v}"/>
+      ${brillo(x-9, 196, 8, 5)}
+      <circle cx="${x}" cy="193" r="2.6" fill="#E85A9A"/>
+      ${ojosPerro(x-10, x+10, 205, a)}
+      <ellipse cx="${x}" cy="216" rx="5.2" ry="4" fill="#3A1E12"/><ellipse cx="${x-1.4}" cy="214.8" rx="1.8" ry="1" fill="#7A5240"/>
+      ${bocaPerro(x, 221, a)}
+    </g>
+    <g fill="${c}"><ellipse cx="${x-20}" cy="300" rx="9" ry="12"/><ellipse cx="${x+20}" cy="300" rx="9" ry="12"/></g>
+    <g fill="#5A3A30"><ellipse cx="${x-20}" cy="304" rx="4" ry="3.4"/><ellipse cx="${x+20}" cy="304" rx="4" ry="3.4"/>
+      <circle cx="${x-24}" cy="297" r="1.6"/><circle cx="${x-20}" cy="295" r="1.6"/><circle cx="${x-16}" cy="297" r="1.6"/>
+      <circle cx="${x+16}" cy="297" r="1.6"/><circle cx="${x+20}" cy="295" r="1.6"/><circle cx="${x+24}" cy="297" r="1.6"/></g>
+  </g>`;
+}
+
+/* ---------- fondo y extras ---------- */
+function fondo(a) {
+  const noche = a === 'dormido';
+  return `<defs>${DEFS3D}
+    <linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${noche ? '#1B2147' : '#7FA6D6'}"/><stop offset="1" stop-color="${noche ? '#3B3F6E' : '#D7E3F2'}"/></linearGradient>
+  </defs>
+  <rect width="400" height="330" fill="url(#cielo)"/>
+  ${noche ? `<circle cx="340" cy="46" r="18" fill="#F4ECC8"/><circle cx="348" cy="40" r="16" fill="#1F2550"/>
+    <g fill="#F4ECC8"><circle cx="60" cy="40" r="1.6"/><circle cx="110" cy="22" r="1.2"/><circle cx="200" cy="34" r="1.5"/><circle cx="250" cy="18" r="1.1"/><circle cx="380" cy="90" r="1.3"/></g>`
+  : `<g fill="#fff" opacity=".85" class="flota"><ellipse cx="70" cy="44" rx="34" ry="12"/><ellipse cx="92" cy="36" rx="22" ry="12"/>
+      <ellipse cx="320" cy="34" rx="40" ry="12"/><ellipse cx="300" cy="28" rx="22" ry="11"/></g>`}
+  <path d="M0 196 q40 -40 70 -26 q20 -30 52 -8 L122 330 L0 330 Z" fill="${noche ? '#24402C' : '#5E8F4E'}" opacity=".7"/>
+  <path d="M0 250 Q200 226 400 252 L400 330 L0 330 Z" fill="${noche ? '#2B4A2A' : '#7DB55A'}"/>
+  <rect x="300" y="180" width="100" height="60" fill="${noche ? '#2E4B3E' : '#3FB8A0'}" opacity=".55"/>
+  <ellipse cx="128" cy="326" rx="70" ry="10" fill="url(#gSombra)"/><ellipse cx="272" cy="326" rx="70" ry="10" fill="url(#gSombra)"/>`;
+}
+function extras(a) {
+  if (a === 'feliz') return `<g class="late" fill="#E8435A"><path transform="translate(200 120) scale(.9)" d="M0 6 C-10 -4 -16 6 0 18 C16 6 10 -4 0 6 Z"/></g>
+    <g class="late" style="animation-delay:.35s" fill="#F06C85"><path transform="translate(200 92) scale(.6)" d="M0 6 C-10 -4 -16 6 0 18 C16 6 10 -4 0 6 Z"/></g>`;
+  if (a === 'pensando') return `<g class="flota"><circle cx="200" cy="70" r="22" fill="#fff" stroke="#333" stroke-width="2"/>
+    <circle cx="186" cy="100" r="5" fill="#fff" stroke="#333" stroke-width="2"/><circle cx="178" cy="112" r="3" fill="#fff" stroke="#333" stroke-width="2"/>
+    <text x="200" y="79" font-family="Fredoka, sans-serif" font-size="26" font-weight="700" text-anchor="middle" fill="#333">?</text></g>`;
+  if (a === 'enojado') {
+    const marca = (tx, ty, s, d) => `<g class="late" style="animation-delay:${d}s"><path transform="translate(${tx} ${ty}) scale(${s})" d="M-9 -3 q4 -1 5 -6 M3 -9 q1 5 6 5 M9 3 q-5 1 -5 6 M-3 9 q-1 -5 -6 -5" stroke="#E0303A" stroke-width="3.2" fill="none" stroke-linecap="round"/></g>`;
+    return marca(172, 70, 1, 0) + marca(318, 76, .9, .3) + marca(160, 196, .7, .5) + marca(306, 190, .7, .2) + `<rect width="400" height="330" fill="#C02020" opacity=".07"/>`;
+  }
+  if (a === 'sorpresa') return `<g font-family="Fredoka, sans-serif" font-weight="700" fill="#F2B233" stroke="#7A4A0A" stroke-width="1.2" text-anchor="middle">
+    <text class="late" x="176" y="70" font-size="30">!</text><text class="late" x="322" y="74" font-size="30" style="animation-delay:.2s">!</text>
+    <text class="late" x="200" y="186" font-size="22" style="animation-delay:.4s">!!</text></g>`;
+  if (a === 'dormido') return `<g font-family="Fredoka, sans-serif" font-weight="700" fill="#F4ECC8">
+    <text class="zz" x="168" y="80" font-size="14">Z</text><text class="zz" x="180" y="62" font-size="18" style="animation-delay:.6s">Z</text>
+    <text class="zz" x="320" y="84" font-size="14" style="animation-delay:.3s">Z</text><text class="zz" x="334" y="66" font-size="18" style="animation-delay:.9s">Z</text>
+    <text class="zz" x="200" y="196" font-size="12" style="animation-delay:1.2s">z</text></g><rect width="400" height="330" fill="#0A0C24" opacity=".18"/>`;
+  return '';
+}
+function efectoAccion(acc) {
+  if (acc === 'ladrar') return `<g class="pop" font-family="Fredoka, sans-serif" font-weight="700">
+      <path d="M40 150 h76 a10 10 0 0 1 10 10 v20 a10 10 0 0 1 -10 10 h-50 l-10 12 l0 -12 h-16 a10 10 0 0 1 -10 -10 v-20 a10 10 0 0 1 10 -10 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+      <text x="78" y="177" font-size="17" text-anchor="middle" fill="#222">¡Guau!</text></g>
+    <g class="pop" style="animation-delay:.25s" font-family="Fredoka, sans-serif" font-weight="700">
+      <path d="M296 150 h76 a10 10 0 0 1 10 10 v20 a10 10 0 0 1 -10 10 h-16 l0 12 l-10 -12 h-50 a10 10 0 0 1 -10 -10 v-20 a10 10 0 0 1 10 -10 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+      <text x="334" y="177" font-size="17" text-anchor="middle" fill="#222">¡Guau guau!</text></g>`;
+  if (acc === 'corazones') {
+    let s = '';
+    for (let i = 0; i < 14; i++) { const x = 20 + Math.random() * 360, y = 230 + Math.random() * 80, d = Math.random() * 1.2;
+      s += `<path class="sube" style="animation-delay:${d.toFixed(2)}s" transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${(.5 + Math.random() * .6).toFixed(2)})" d="M0 6 C-10 -4 -16 6 0 18 C16 6 10 -4 0 6 Z" fill="${i % 2 ? '#E8435A' : '#F48FB1'}"/>`; }
+    return s;
+  }
+  if (acc === 'premios') {
+    let s = '';
+    for (let i = 0; i < 12; i++) { const x = 20 + Math.random() * 360, d = Math.random() * 1.4;
+      s += `<g class="cae" style="animation-delay:${d.toFixed(2)}s"><g transform="translate(${x.toFixed(0)} 0)">
+        <path d="M-12 -3 h24 M-12 3 h24" stroke="#F3E2C0" stroke-width="5"/>
+        <circle cx="-13" cy="-4" r="4" fill="#F3E2C0"/><circle cx="-13" cy="4" r="4" fill="#F3E2C0"/><circle cx="13" cy="-4" r="4" fill="#F3E2C0"/><circle cx="13" cy="4" r="4" fill="#F3E2C0"/></g></g>`; }
+    return s;
+  }
+  if (acc === 'foto') return `<rect class="flash" width="400" height="330" fill="#fff"/><text class="pop" x="200" y="40" font-family="Fredoka, sans-serif" font-weight="700" font-size="22" text-anchor="middle" fill="#fff" stroke="#333" stroke-width="1">¡Click!</text>`;
+  return '';
+}
+
+/* ---------- frases ---------- */
+const FRASES = {
+  feliz: n => [`¡Domingo de parque con la manada!`, `${n[2]} y ${n[3]} están felices de que los carguen.`, `Familia completa: dos humanos, dos colas moviéndose.`],
+  pensando: n => [`¿Y si hoy toca baño?`, `${n[3]} se pregunta si hay premio después de la foto.`, `${n[0]} está pensando a dónde ir a pasear.`],
+  enojado: n => [`¡Grrr! Alguien dijo "veterinario".`, `${n[2]} no quiere bajarse de los brazos.`, `${n[1]} y ${n[3]}: modo enojados.`],
+  sorpresa: n => [`¿¡Una ardilla!?`, `¡${n[3]} vio otro perrito!`, `¡Sorpresa! Hay premios en el bolsillo de ${n[1]}.`],
+  dormido: n => [`Después del parque, siesta para todos.`, `${n[2]} ronca bajito.`, `Shhh… la manada está durmiendo.`],
+};
+const FRASE_ACCION = {
+  saltar: n => `¡Todos a saltar!`, ladrar: n => `${n[2]} y ${n[3]} saludan a todo el parque.`, girar: n => `${n[2]} y ${n[3]} persiguen su cola.`,
+  corazones: n => `Mucho amor en esta familia.`, premios: n => `¡Lluvia de premios para ${n[2]} y ${n[3]}!`, foto: n => `¡Selfie de la manada! Todos sonrían.`,
+};
+const PERSONAL = [n => `${n[0]}: "¡Mira qué lindos están!"`, n => `${n[1]}: "¡Vamos, manada!"`, n => `${n[2]}: "¡Guau! ¿Me das un premio?"`, n => `${n[3]}: "¡Bájame, quiero correr!"`];
+const azar = arr => arr[Math.floor(Math.random() * arr.length)];
+function decir(t) { document.getElementById('dicho').textContent = t; }
+
+/* ---------- render ---------- */
+const svg = document.getElementById('escena');
+let timer = null;
+function render() {
+  const a = estado.accion === 'foto' ? 'feliz' : estado.animo;
+  svg.innerHTML = fondo(a) + ella(a) + el(a) + peludo(a) + cocker(a) + extras(a) + efectoAccion(estado.accion);
+  const quien = [...svg.querySelectorAll('.who')];
+  const clase = { saltar: 'salta', ladrar: 'tiembla', girar: 'gira', foto: 'salta' }[estado.accion];
+  if (clase) quien.forEach((g, i) => {
+    const esPerro = i >= 2;
+    if ((estado.accion === 'girar' || estado.accion === 'ladrar') && !esPerro) return;
+    g.classList.add(clase); g.style.animationDelay = (i * .12) + 's';
+  });
+  if (estado.solo !== null) { const g = quien.find(q => q.dataset.who === String(estado.solo)); if (g) g.classList.add('salta'); }
+}
+function lanzar(acc) {
+  estado.accion = acc; estado.solo = null; render(); decir(FRASE_ACCION[acc](nombres));
+  clearTimeout(timer); timer = setTimeout(() => { estado.accion = null; render(); }, acc === 'premios' || acc === 'corazones' ? 4000 : 2400);
+}
+function ponerAnimo(an) {
+  estado.animo = an; estado.accion = null; estado.solo = null; render(); decir(azar(FRASES[an](nombres)));
+  document.querySelectorAll('#animos button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === an)));
+}
+
+const cajaAnimos = document.getElementById('animos');
+ANIMOS.forEach(([v, t]) => { const b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.dataset.v = v; b.textContent = t;
+  b.setAttribute('aria-pressed', String(v === estado.animo)); b.onclick = () => ponerAnimo(v); cajaAnimos.appendChild(b); });
+const cajaAcc = document.getElementById('acciones');
+ACCIONES.forEach(([v, t]) => { const b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.textContent = t; b.onclick = () => lanzar(v); cajaAcc.appendChild(b); });
+
+svg.addEventListener('click', e => {
+  const g = e.target.closest('[data-who]'); if (!g) return;
+  const i = Number(g.dataset.who); estado.solo = i; estado.accion = null; render(); decir(PERSONAL[i](nombres));
+  clearTimeout(timer); timer = setTimeout(() => { estado.solo = null; render(); }, 1800);
+});
+
+const REGLAS = [
+  [/pase|parque|calle|correr/i, () => { lanzar('saltar'); decir('¿¡Paseo!? ¡Ya estamos en la puerta!'); }],
+  [/baño|bañ|ducha|agua/i, () => { ponerAnimo('enojado'); decir(`¿Baño? ${nombres[2]} y ${nombres[3]} se esconden.`); }],
+  [/premio|galleta|comida|snack|hueso/i, () => lanzar('premios')],
+  [/quiero|amor|lindo|bonit|hermos/i, () => lanzar('corazones')],
+  [/dorm|noche|siesta|sueño/i, () => ponerAnimo('dormido')],
+  [/foto|selfie|sonr/i, () => lanzar('foto')],
+  [/gato|ardilla|vet|veterin/i, () => { ponerAnimo('sorpresa'); lanzar('ladrar'); }],
+  [/guau|ladr|habla/i, () => lanzar('ladrar')],
+  [/gir|vuelta|cola/i, () => lanzar('girar')],
+  [/piens|idea|duda|\?/i, () => ponerAnimo('pensando')],
+  [/enoj|bravo|grr/i, () => ponerAnimo('enojado')],
+];
+document.getElementById('decir').addEventListener('submit', e => {
+  e.preventDefault(); const inp = document.getElementById('frase'); const t = inp.value.trim(); if (!t) return;
+  const r = REGLAS.find(([re]) => re.test(t)); if (r) r[1](); else { lanzar(azar(['saltar','ladrar','corazones'])); decir(`${nombres[2]} y ${nombres[3]} mueven la cola: "${t}"`); }
+  inp.value = '';
+});
+
+document.querySelectorAll('.names input').forEach(inp => {
+  const i = Number(inp.dataset.i); if (nombres[i] !== inp.placeholder) inp.value = nombres[i];
+  inp.addEventListener('input', () => {
+    nombres[i] = inp.value.trim() || inp.placeholder;
+    try { localStorage.setItem('fp_nombres', JSON.stringify(nombres)); } catch (e) {}
+  });
+});
+
+render();
+</script>
+
+</body>
+</html>
